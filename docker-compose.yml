@@ -1,33 +1,18 @@
-# docker-compose.yml
-
-version: '3.8'
+version: '3.7'
 
 services:
-  yii2_app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: yii2_app
-    restart: unless-stopped
-    volumes:
-      - .:/var/www/html
-    networks:
-      - yii2net
-
-  nginx:
-    image: nginx:latest
-    container_name: yii2_nginx
-    restart: unless-stopped
+  yii2-app:
+    image: yii2-app:latest
+    build: .
     ports:
       - "8080:80"
-    volumes:
-      - .:/var/www/html
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - yii2_app
     networks:
-      - yii2net
+      - appnet
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
 
 networks:
-  yii2net:
-    driver: bridge
+  appnet:
+    driver: overlay

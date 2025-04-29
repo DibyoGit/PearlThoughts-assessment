@@ -1,28 +1,16 @@
-# Dockerfile
+FROM php:7.4-apache
 
-FROM php:8.1-fpm
+# Install PHP extensions
+RUN docker-php-ext-install pdo pdo_mysql
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    libzip-dev zip unzip git \
-    && docker-php-ext-install pdo_mysql zip
+# Enable Apache Rewrite Module
+RUN a2enmod rewrite
 
-# Install Composer
-COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
+# Copy app into container
+COPY . /var/www/html/
 
-# Set working directory
-WORKDIR /var/www/html
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
 
-# Copy existing application
-COPY . /var/www/html
-
-# Install PHP dependencies
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
-
-# Set correct permissions (for runtime folders)
-RUN chmod -R 777 runtime web/assets
-
-# Expose port
-EXPOSE 9000
-
-CMD ["php-fpm"]
+EXPOSE 80
